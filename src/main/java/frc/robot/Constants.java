@@ -15,6 +15,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.utils.MechanismControl.MaplePIDController;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonUtils;
 
 import java.util.Optional;
 
@@ -57,6 +58,19 @@ public final class Constants {
     public static final class CrescendoField2024Constants {
         public static final double FIELD_WIDTH = 16.54;
         public static final double FIELD_HEIGHT = 8.21;
+    }
+
+    public static final class ShooterConfigs {
+        public static final double FLYWHEELS_KS = 0.11287;
+        public static final double FLYWHEELS_KV = 0.0019762;
+        public static final double FLYWHEELS_KA = 0.00037458;
+        public static final TrapezoidProfile.Constraints FLYWHEELS_RPM_CONSTRAIN = new TrapezoidProfile.Constraints(
+                5000/0.5, 5000/0.5 / 0.3
+        );
+        public static final MaplePIDController.MaplePIDConfig FLYWHEELS_PID = new MaplePIDController.MaplePIDConfig(
+                7, 1503,
+                0, 50,
+                0, false, 0);
     }
 
     public static final class DriveConfigs {
