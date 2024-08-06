@@ -25,9 +25,9 @@ public class MaplePIDController extends PIDController {
     }
 
     public static final class MaplePIDConfig {
-        final double maximumPower, errorStartDecelerate, deadBand, errorTolerance, timeThinkAhead;
-        final double Kp, Ki, Kd;
-        final boolean isCircularLoop;
+        public final double maximumPower, errorStartDecelerate, deadBand, errorTolerance, timeThinkAhead;
+        public final double Kp, Ki, Kd;
+        public final boolean isCircularLoop;
 
         public MaplePIDConfig(double maximumPower, double errorStartDecelerate, double percentDeadBand, double errorTolerance, double timeThinkAhead, boolean isCircularLoop, double ki) {
             this.maximumPower = maximumPower;

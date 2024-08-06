@@ -15,7 +15,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.utils.MechanismControl.MaplePIDController;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonUtils;
 
 import java.util.Optional;
 
@@ -60,11 +59,11 @@ public final class Constants {
         public static final double FIELD_HEIGHT = 8.21;
     }
 
-    public static final class ShooterConfigs {
+    public static final class FlyWheelsConfigs {
         public static final double FLYWHEELS_KS = 0.11287;
         public static final double FLYWHEELS_KV = 0.0019762;
         public static final double FLYWHEELS_KA = 0.00037458;
-        public static final TrapezoidProfile.Constraints FLYWHEELS_RPM_CONSTRAIN = new TrapezoidProfile.Constraints(
+        public static final TrapezoidProfile.Constraints FLYWHEELS_RPM_PROFILE_CONSTRAIN = new TrapezoidProfile.Constraints(
                 5000/0.5, 5000/0.5 / 0.3
         );
         public static final MaplePIDController.MaplePIDConfig FLYWHEELS_PID = new MaplePIDController.MaplePIDConfig(
@@ -72,6 +71,33 @@ public final class Constants {
                 0, 50,
                 0, false, 0);
     }
+
+    public static final class PitchConfigs {
+        public static final double GEAR_RATIO = 400;
+        public static final double PITCH_LOWEST_ROTATION_RAD = Math.toRadians(8);
+        public static final double PITCH_HIGHER_LIMIT_RAD = Math.toRadians(92);
+
+        public static final double PITCH_KS = 0.12;
+        public static final double PITCH_KG = 0.2;
+        public static final double PITCH_KV = 7.2;
+        public static final double PITCH_KA = 0.01;
+
+        public static final MaplePIDController.MaplePIDConfig PITCH_PID = new MaplePIDController.MaplePIDConfig(
+                12,
+                Math.toRadians(25),
+                0,
+                Math.toRadians(2),
+                0.05,
+                false,
+                0
+        );
+
+        public static final TrapezoidProfile.Constraints PITCH_PROFILE_CONSTRAIN = new TrapezoidProfile.Constraints(
+                Math.toRadians(180), Math.toRadians(250)
+        );
+
+    }
+
 
     public static final class DriveConfigs {
         public static final double nonUsageTimeResetWheels = 1;

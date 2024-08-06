@@ -11,12 +11,10 @@ public class FlyWheelsIOReal implements FlyWheelsIO {
     private final TalonFX shooterFalcon1, shooterFalcon2;
     private final StatusSignal<Double>
             shooter1SuppliedCurrentAmps, shooter2SuppliedCurrentAmps, shooterPositionRev, shooterVelocityRevPerSec;
-    private final DigitalInput limitSwitch;
     public FlyWheelsIOReal() {
         this.shooterFalcon1 = new TalonFX(12);
         this.shooterFalcon2 = new TalonFX(13);
         this.shooterFalcon2.setInverted(true);
-        this.limitSwitch = new DigitalInput(0);
 
         this.shooter1SuppliedCurrentAmps = shooterFalcon1.getSupplyCurrent();
         this.shooter2SuppliedCurrentAmps = shooterFalcon2.getSupplyCurrent();

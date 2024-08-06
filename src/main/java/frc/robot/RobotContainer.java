@@ -26,6 +26,7 @@ import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
 import frc.robot.subsystems.drive.IO.GyroIOSim;
 import frc.robot.subsystems.drive.IO.ModuleIOSim;
 import frc.robot.subsystems.drive.IO.ModuleIOTalonFX;
+import frc.robot.subsystems.shooter.PitchIOReal;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.FlyWheelsIOReal;
 import frc.robot.subsystems.vision.apriltags.AprilTagVision;
@@ -117,7 +118,7 @@ public class RobotContainer {
                          drive
                  );
 
-                 shooter = new Shooter(new FlyWheelsIOReal());
+                 shooter = new Shooter(new FlyWheelsIOReal(), new PitchIOReal());
             }
 
             case SIM -> {
@@ -161,7 +162,7 @@ public class RobotContainer {
                 fieldSimulation.addRobot(new OpponentRobotSimulation(2));
 
                 // no shooters simulation (for now)
-                shooter = new Shooter(inputs -> {});
+                shooter = new Shooter(shooterInputs -> {}, pitchInputs -> {});
             }
 
             default -> {
@@ -182,7 +183,7 @@ public class RobotContainer {
                         drive
                 );
 
-                shooter = new Shooter(inputs -> {});
+                shooter = new Shooter(shooterInputs -> {}, pitchInputs -> {});
             }
         }
         SmartDashboard.putData("Select Test", testChooser = TestBuilder.buildTestsChooser(this));
@@ -241,9 +242,9 @@ public class RobotContainer {
         ));
 
         driverController.a().whileTrue(Commands.run(
-                () -> shooter.runShooterState(0, 3000))
-                .finallyDo(() -> shooter.runShooterState(0, 0))
-        );
+                () -> shooter.runShooterState(Math.toRadians(50), 3000),
+                shooter
+        ));
     }
 
     /**
