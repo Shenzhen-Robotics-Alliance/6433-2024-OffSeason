@@ -13,8 +13,7 @@ public class FlyWheelsIOReal implements FlyWheelsIO {
             shooter1SuppliedCurrentAmps, shooter2SuppliedCurrentAmps, shooterPositionRev, shooterVelocityRevPerSec;
     public FlyWheelsIOReal() {
         this.shooterFalcon1 = new TalonFX(12);
-        this.shooterFalcon2 = new TalonFX(13);
-        this.shooterFalcon2.setInverted(true);
+        this.shooterFalcon2 = new TalonFX(16);
 
         this.shooter1SuppliedCurrentAmps = shooterFalcon1.getSupplyCurrent();
         this.shooter2SuppliedCurrentAmps = shooterFalcon2.getSupplyCurrent();

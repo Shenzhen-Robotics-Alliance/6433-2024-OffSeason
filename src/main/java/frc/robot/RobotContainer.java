@@ -14,18 +14,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.autos.Auto;
 import frc.robot.autos.AutoBuilder;
 import frc.robot.commands.drive.AutoAlignment;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.commands.shooter.GrabNoteManual;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
 import frc.robot.subsystems.drive.IO.GyroIOSim;
 import frc.robot.subsystems.drive.IO.ModuleIOSim;
 import frc.robot.subsystems.drive.IO.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.shooter.PitchIOReal;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.FlyWheelsIOReal;
@@ -58,6 +60,7 @@ public class RobotContainer {
     public final SwerveDrive drive;
     public final AprilTagVision aprilTagVision;
     public final Shooter shooter;
+    private final Intake intake;
 
     // Controller
     private final CommandXboxController driverController = new CommandXboxController(0),
@@ -118,7 +121,9 @@ public class RobotContainer {
                          drive
                  );
 
-                 shooter = new Shooter(new FlyWheelsIOReal(), new PitchIOReal());
+                 this.shooter = new Shooter(new FlyWheelsIOReal(), new PitchIOReal());
+
+                 this.intake = new Intake(new IntakeIOReal());
             }
 
             case SIM -> {
@@ -163,6 +168,8 @@ public class RobotContainer {
 
                 // no shooters simulation (for now)
                 shooter = new Shooter(shooterInputs -> {}, pitchInputs -> {});
+
+                this.intake = new Intake(inputs -> {});
             }
 
             default -> {
@@ -183,7 +190,9 @@ public class RobotContainer {
                         drive
                 );
 
-                shooter = new Shooter(shooterInputs -> {}, pitchInputs -> {});
+                this.shooter = new Shooter(shooterInputs -> {}, pitchInputs -> {});
+
+                this.intake = new Intake(inputs -> {});
             }
         }
         SmartDashboard.putData("Select Test", testChooser = TestBuilder.buildTestsChooser(this));
@@ -233,18 +242,17 @@ public class RobotContainer {
                 ).ignoringDisable(true)
         );
 
-        driverController.y().whileTrue(new AutoAlignment(
-                drive,
-                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.35, Rotation2d.fromDegrees(-90))),
-                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.7, Rotation2d.fromDegrees(-90))),
-                new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)),
-                0.5
-        ));
+//        driverController.y().whileTrue(new AutoAlignment(
+//                drive,
+//                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.35, Rotation2d.fromDegrees(-90))),
+//                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.7, Rotation2d.fromDegrees(-90))),
+//                new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)),
+//                0.5
+//        ));
 
-        driverController.a().whileTrue(Commands.run(
-                () -> shooter.runShooterState(Math.toRadians(50), 3000),
-                shooter
-        ));
+        driverController.y().whileTrue(Commands.run(() -> shooter.runShooterState(Math.toRadians(40), 4000), shooter));
+
+        driverController.a().whileTrue(new GrabNoteManual(shooter, intake));
     }
 
     /**

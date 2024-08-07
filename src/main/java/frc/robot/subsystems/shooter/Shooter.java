@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
@@ -64,9 +65,7 @@ public class Shooter extends MapleSubsystem {
         this.pitchFeedBack = new MaplePIDController(PITCH_PID);
         this.pitchProfile = new TrapezoidProfile(PITCH_PROFILE_CONSTRAIN);
 
-        super.setDefaultCommand(Commands.run(() -> runShooterState(
-                PITCH_LOWEST_ROTATION_RAD, 0
-        ), this));
+        super.setDefaultCommand(Commands.run(this::runIdle, this));
     }
 
     @Override
@@ -97,6 +96,10 @@ public class Shooter extends MapleSubsystem {
 
         if (!pitchInputs.calibrated)
             DriverStation.reportWarning("Warning!!! Pitch not calibrated!", false);
+    }
+
+    public void runIdle() {
+        runShooterState(PITCH_LOWEST_ROTATION_RAD, 0);
     }
 
     public void runShooterState(double pitchAngleSetpointRadians, double shooterSetpointRPM) {

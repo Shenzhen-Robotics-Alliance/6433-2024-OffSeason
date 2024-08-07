@@ -77,25 +77,24 @@ public final class Constants {
         public static final double PITCH_LOWEST_ROTATION_RAD = Math.toRadians(8);
         public static final double PITCH_HIGHER_LIMIT_RAD = Math.toRadians(92);
 
-        public static final double PITCH_KS = 0.12;
-        public static final double PITCH_KG = 0.2;
-        public static final double PITCH_KV = 7.2;
+        public static final double PITCH_KS = 0.15;
+        public static final double PITCH_KG = 0.22;
+        public static final double PITCH_KV = 8;
         public static final double PITCH_KA = 0.01;
 
         public static final MaplePIDController.MaplePIDConfig PITCH_PID = new MaplePIDController.MaplePIDConfig(
                 12,
-                Math.toRadians(25),
+                Math.toRadians(22),
                 0,
                 Math.toRadians(2),
-                0.05,
+                0.03,
                 false,
                 0
         );
 
         public static final TrapezoidProfile.Constraints PITCH_PROFILE_CONSTRAIN = new TrapezoidProfile.Constraints(
-                Math.toRadians(180), Math.toRadians(250)
+                Math.toRadians(160), Math.toRadians(320)
         );
-
     }
 
 
