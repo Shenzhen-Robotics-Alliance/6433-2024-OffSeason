@@ -55,4 +55,8 @@ public class Intake extends MapleSubsystem {
     public void runIdle() {
         io.runIntakeVoltage(0);
     }
+
+    public void runReverse() {
+        io.runIntakeVoltage(-12);
+    }
 }

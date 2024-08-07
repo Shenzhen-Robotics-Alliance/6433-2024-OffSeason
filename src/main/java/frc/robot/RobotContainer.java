@@ -254,6 +254,8 @@ public class RobotContainer {
 
         driverController.y().onTrue(new AmpManual(shooter, intake));
 
+        driverController.a().whileTrue(Commands.run(intake::runReverse, intake));
+
         driverController.leftBumper().whileTrue(new GrabNoteManual(shooter, intake));
     }
 
