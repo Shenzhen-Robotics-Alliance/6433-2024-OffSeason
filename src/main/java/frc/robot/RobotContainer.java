@@ -243,22 +243,23 @@ public class RobotContainer {
                 ).ignoringDisable(true)
         );
 
-        driverController.b().whileTrue(
-                new AutoAlignment(
-                        drive,
-                        () -> Constants.toCurrentAlliancePose(new Pose2d(
-                                1.85, 7,
-                                Rotation2d.fromDegrees(-90)
-                        )),
-                        () -> Constants.toCurrentAlliancePose(new Pose2d(
-                                1.85, 7.7,
-                                Rotation2d.fromDegrees(-90)
-                        )),
-                        new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)), 0.5)
-                        .alongWith(Commands.run(shooter::runAmp, shooter))
-                        .andThen(new AmpManual(shooter, intake)));
+        driverController.b().whileTrue(new AutoAlignment(
+                drive,
+                () -> Constants.toCurrentAlliancePose(new Pose2d(
+                        1.85, 7,
+                        Rotation2d.fromDegrees(-90)
+                )),
+                () -> Constants.toCurrentAlliancePose(new Pose2d(
+                        1.85, 7.7,
+                        Rotation2d.fromDegrees(-90)
+                )),
+                new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)),
+                        0.5,
+                Commands.run(shooter::runPrepareAmp, shooter),
+                new AmpManual(shooter, intake)
+        ));
 
-        driverController.y().whileTrue(new AmpManual(shooter, intake));
+        driverController.y().onTrue(new AmpManual(shooter, intake));
 
         driverController.leftBumper().whileTrue(new GrabNoteManual(shooter, intake));
     }
