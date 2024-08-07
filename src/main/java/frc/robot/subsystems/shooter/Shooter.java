@@ -6,11 +6,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.subsystems.MapleSubsystem;
+import frc.robot.utils.Alert;
 import frc.robot.utils.MechanismControl.MaplePIDController;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -39,6 +39,7 @@ public class Shooter extends MapleSubsystem {
     private TrapezoidProfile.State pitchCurrentState;
     private double pitchSetpointRad;
 
+    private final Alert pitchNotCalibratedAlert = new Alert("Pitch not calibrated!", Alert.AlertType.ERROR);
     public Shooter(FlyWheelsIO flyWheelsIO, PitchIO pitchIO) {
         super("Shooter");
 
@@ -66,6 +67,8 @@ public class Shooter extends MapleSubsystem {
         this.pitchProfile = new TrapezoidProfile(PITCH_PROFILE_CONSTRAIN);
 
         super.setDefaultCommand(Commands.run(this::runIdle, this));
+
+        pitchNotCalibratedAlert.setActivated(false);
     }
 
     @Override
@@ -94,8 +97,7 @@ public class Shooter extends MapleSubsystem {
         pitchIO.updateInputs(pitchInputs);
         Logger.processInputs("Shooter/Pitch", pitchInputs);
 
-        if (!pitchInputs.calibrated)
-            DriverStation.reportWarning("Warning!!! Pitch not calibrated!", false);
+        pitchNotCalibratedAlert.setActivated(!pitchInputs.calibrated);
     }
 
     public void runIdle() {
