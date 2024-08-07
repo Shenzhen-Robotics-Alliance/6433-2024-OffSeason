@@ -6,14 +6,12 @@ package frc.robot.subsystems.drive.IO;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.utils.Config.MapleConfigFile;
 
 import java.util.Arrays;
 
 import static frc.robot.Constants.RobotPhysicsSimulationConfigs.*;
-import static frc.robot.Constants.ChassisDefaultConfigs.*;
 
 /**
  * Physics sim implementation of module IO.
