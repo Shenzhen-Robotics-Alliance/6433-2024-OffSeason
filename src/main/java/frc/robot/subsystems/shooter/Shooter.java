@@ -104,12 +104,22 @@ public class Shooter extends MapleSubsystem {
         runShooterState(PITCH_LOWEST_ROTATION_RAD, 0);
     }
 
-    public void runShooterState(double pitchAngleSetpointRadians, double shooterSetpointRPM) {
+    public void runPrepareAmp() {
+        runShooterState(Math.toRadians(65), 300);
+    }
+
+    public void runAmp() {
+        runShooterState(PITCH_HIGHER_LIMIT_RAD, 500);
+    }
+
+    public void runShooterState(double pitchAngleSetpointRadians, double flyWheelsSetpointRPM) {
+        this.pitchSetpointRad = pitchAngleSetpointRadians;
+        this.flyWheelsSetpointRPM = flyWheelsSetpointRPM;
         runPitchCloseLoop(pitchAngleSetpointRadians);
-        runFlyWheelCloseLoop(shooterSetpointRPM);
+        runFlyWheelCloseLoop(flyWheelsSetpointRPM);
 
         Logger.recordOutput("Shooter/pitchAngleSetpointRadians", pitchAngleSetpointRadians);
-        Logger.recordOutput("Shooter/shooterSetpointRPM", shooterSetpointRPM);
+        Logger.recordOutput("Shooter/shooterSetpointRPM", flyWheelsSetpointRPM);
     }
 
     double previousStateVelocity = 0;
@@ -127,7 +137,7 @@ public class Shooter extends MapleSubsystem {
                 new TrapezoidProfile.State(pitchAngleSetpointRadians, 0)
         );
 
-        Logger.recordOutput("pitchProfileGoalPosition (deg)", Math.toDegrees(pitchCurrentState.position));
+        Logger.recordOutput("Shooter/pitchProfileGoalPosition (deg)", Math.toDegrees(pitchCurrentState.position));
         final double pitchAcceleration = (pitchCurrentState.velocity - previousStateVelocity) / Robot.defaultPeriodSecs;
         previousStateVelocity = pitchCurrentState.velocity;
         final double
@@ -140,13 +150,13 @@ public class Shooter extends MapleSubsystem {
 
         final double
                 safetyConstrainLow = pitchInputs.pitchAngleRad <= PITCH_LOWEST_ROTATION_RAD ? 0 : -10,
-                safetyConstrainHigh = pitchInputs.pitchAngleRad >= PITCH_HIGHER_LIMIT_RAD ? 0 : 12,
+                safetyConstrainHigh = pitchInputs.pitchAngleRad > PITCH_HIGHER_LIMIT_RAD ? 0 : 12,
                 pitchVoltage = MathUtil.clamp(
                         feedForwardVoltage + feedBackVoltage, safetyConstrainLow, safetyConstrainHigh
                 );
 
-        Logger.recordOutput("Pitch Actual Position (Deg)", Math.toDegrees(getPitchAngleRad()));
-        Logger.recordOutput("Pitch Correction Voltage", pitchVoltage);
+        Logger.recordOutput("Shooter/Pitch Actual Position (Deg)", Math.toDegrees(getPitchAngleRad()));
+        Logger.recordOutput("Shooter/Pitch Correction Voltage", pitchVoltage);
         pitchIO.runPitchVoltage(pitchVoltage);
     }
 
@@ -154,10 +164,6 @@ public class Shooter extends MapleSubsystem {
         if (getPitchAngleRad() < Math.toRadians(12) && shooterSetpointRPM!=0) {
             DriverStation.reportWarning("Pitch too low, not starting shooter for now...", false);
             shooterSetpointRPM = 0;
-        }
-        if (shooterSetpointRPM == 0) {
-            flyWheelsIO.runFlyWheelsVoltage(0);
-            return;
         }
 
         flyWheelCurrentState = flyWheelsSpeedRPMProfile.calculate(

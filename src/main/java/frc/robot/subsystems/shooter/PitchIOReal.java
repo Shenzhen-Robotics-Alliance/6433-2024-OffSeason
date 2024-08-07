@@ -17,6 +17,7 @@ public class PitchIOReal implements PitchIO {
 
     private double encoderPositionAtLowestPoint;
     public PitchIOReal() {
+        pitchFalcon.setInverted(true);
         pitchMotorSuppliedAmps = pitchFalcon.getSupplyCurrent();
         pitchRelativeEncoderPositionRev = pitchFalcon.getPosition();
         pitchEncoderVelocityRevPerSec = pitchFalcon.getVelocity();

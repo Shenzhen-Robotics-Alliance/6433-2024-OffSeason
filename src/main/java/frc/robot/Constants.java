@@ -93,7 +93,7 @@ public final class Constants {
         );
 
         public static final TrapezoidProfile.Constraints PITCH_PROFILE_CONSTRAIN = new TrapezoidProfile.Constraints(
-                Math.toRadians(160), Math.toRadians(320)
+                Math.toRadians(180), Math.toRadians(360)
         );
     }
 
@@ -142,9 +142,9 @@ public final class Constants {
         public static final MaplePIDController.MaplePIDConfig chassisTranslationPIDConfig = new MaplePIDController.MaplePIDConfig(
                 ChassisDefaultConfigs.DEFAULT_MAX_VELOCITY_METERS_PER_SECOND,
                 0.6,
-                0.01,
+                0.05,
                 0.03,
-                0.3,
+                0.15,
                 false,
                 0
         );

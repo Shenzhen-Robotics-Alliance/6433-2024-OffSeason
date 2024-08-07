@@ -20,6 +20,7 @@ import frc.robot.autos.Auto;
 import frc.robot.autos.AutoBuilder;
 import frc.robot.commands.drive.AutoAlignment;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.commands.shooter.AmpManual;
 import frc.robot.commands.shooter.GrabNoteManual;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
@@ -236,23 +237,30 @@ public class RobotContainer {
         ));
 
         driverController.x().whileTrue(Commands.run(drive::lockChassisWithXFormation, drive));
-        driverController.b().onTrue(Commands.runOnce(
+        driverController.start().onTrue(Commands.runOnce(
                 () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                 drive
                 ).ignoringDisable(true)
         );
 
-//        driverController.y().whileTrue(new AutoAlignment(
-//                drive,
-//                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.35, Rotation2d.fromDegrees(-90))),
-//                () -> Constants.toCurrentAlliancePose(new Pose2d(1.85, 7.7, Rotation2d.fromDegrees(-90))),
-//                new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)),
-//                0.5
-//        ));
+        driverController.b().whileTrue(
+                new AutoAlignment(
+                        drive,
+                        () -> Constants.toCurrentAlliancePose(new Pose2d(
+                                1.85, 7,
+                                Rotation2d.fromDegrees(-90)
+                        )),
+                        () -> Constants.toCurrentAlliancePose(new Pose2d(
+                                1.85, 7.7,
+                                Rotation2d.fromDegrees(-90)
+                        )),
+                        new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)), 0.5)
+                        .alongWith(Commands.run(shooter::runAmp, shooter))
+                        .andThen(new AmpManual(shooter, intake)));
 
-        driverController.y().whileTrue(Commands.run(() -> shooter.runShooterState(Math.toRadians(40), 4000), shooter));
+        driverController.y().whileTrue(new AmpManual(shooter, intake));
 
-        driverController.a().whileTrue(new GrabNoteManual(shooter, intake));
+        driverController.leftBumper().whileTrue(new GrabNoteManual(shooter, intake));
     }
 
     /**
