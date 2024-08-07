@@ -100,13 +100,6 @@ public class RobotContainer {
             case REAL -> {
                 // Real robot, instantiate hardware IO implementations
                 powerDistribution = new PowerDistribution(1, PowerDistribution.ModuleType.kRev);
-//                drive = new SwerveDrive(
-//                        new GyroIOPigeon2(),
-//                        new ModuleIOSparkMax(0),
-//                        new ModuleIOSparkMax(1),
-//                        new ModuleIOSparkMax(2),
-//                        new ModuleIOSparkMax(3)
-//                );
                  drive = new SwerveDrive(
                          new GyroIOPigeon2(),
                          new ModuleIOTalonFX(chassisCalibrationFile.getBlock("FrontLeft"), chassisGeneralConfigBlock),
