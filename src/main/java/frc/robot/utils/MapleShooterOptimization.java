@@ -76,6 +76,7 @@ public class MapleShooterOptimization {
                 robotVelocityFieldRelative.vyMetersPerSecond * flightTimeSeconds
         ));
         final double newDistanceToTarget = targetPosition.getDistance(robotNewPosition);
+        Logger.recordOutput("Shooter/Flight Time", flightTimeSeconds);
         final Rotation2d chassisSpeedsDirection = new Rotation2d(robotVelocityFieldRelative.vxMetersPerSecond, robotVelocityFieldRelative.vyMetersPerSecond),
                 targetToChassisHeading = robotPosition.minus(targetPosition).getAngle();
         final double distanceToTargetChangingRate = targetToChassisHeading.minus(chassisSpeedsDirection).getCos()

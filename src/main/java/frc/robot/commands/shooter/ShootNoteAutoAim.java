@@ -18,7 +18,7 @@ public class ShootNoteAutoAim extends SequentialCommandGroup {
 
         final BooleanSupplier readyToShoot = () -> shooter.isReady()
                 && shooterOptimization.isTargetInRange(targetPositionSupplier.get(), drive.getPose().getTranslation());
-        final Command shooterAimAtSpeaker = new AimAtSpeaker(shooter, shooterOptimization, drive, targetPositionSupplier),
+        final Command shooterAimAtSpeaker = new MaintainAimAtSpeaker(shooter, shooterOptimization, drive, targetPositionSupplier),
                 shoot = intake.shootNoteUntilNoteGone(),
                 shootWhenAimComplete = Commands.waitUntil(readyToShoot).andThen(shoot);
 

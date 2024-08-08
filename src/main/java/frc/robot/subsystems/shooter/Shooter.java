@@ -197,7 +197,7 @@ public class Shooter extends MapleSubsystem {
     }
 
     public void runIdle() {
-        runProfiledShooterState(PITCH_LOWEST_ROTATION_RAD, 0);
+        runProfiledShooterState(Math.toRadians(15), 0);
     }
 
     public void runPrepareAmp() {

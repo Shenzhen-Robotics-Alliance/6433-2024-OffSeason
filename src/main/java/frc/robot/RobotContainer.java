@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -47,6 +48,7 @@ import frc.robot.utils.Config.MapleConfigFile;
 import frc.robot.utils.Config.PhotonCameraProperties;
 import frc.robot.utils.MapleJoystickDriveInput;
 import frc.robot.utils.MapleShooterOptimization;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import java.io.IOException;
@@ -264,19 +266,26 @@ public class RobotContainer {
 
         final MapleShooterOptimization shooterOptimization = new MapleShooterOptimization(
                 "MainShooter",
-                new double[] {1.5, 3, 4, 5, 6},
-                new double[] {70, 55, 45, 35, 30},
-                new double[] {3000, 3500, 4000, 4500, 5000},
-                new double[] {0.25, 0.35, 0.45, 0.5, 0.5}
+                new double[] {1.5, 3, 4, 5},
+                new double[] {48, 38, 32, 26},
+                new double[] {3000, 3500, 4000, 5000},
+                new double[] {0.25, 0.35, 0.45, 0.5}
         );
-        driverController.rightTrigger(0.5).whileTrue(new ShootNoteAutoAim(
-                shooter, intake, shooterOptimization, drive,
-                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE)
-        ).alongWith(new JoystickDriveAndAimAtTarget(
+        driverController.rightTrigger(0.5).whileTrue(new JoystickDriveAndAimAtTarget(
                 driveInput, drive,
                 () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
                 shooterOptimization
+        ).alongWith(new ShootNoteAutoAim(
+                shooter, intake, shooterOptimization, drive,
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE)
         )));
+
+        CommandScheduler.getInstance().schedule(Commands.run(
+                () -> Logger.recordOutput(
+                        "TargetDistance",
+                        Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE)
+                                .minus(drive.getPose().getTranslation()).getNorm())
+        ).ignoringDisable(true));
     }
 
     /**
