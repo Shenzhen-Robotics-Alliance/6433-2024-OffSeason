@@ -14,7 +14,7 @@ public class TestBuilder {
         testsChooser.setDefaultOption("None", Commands::none);
         testsChooser.addOption("Wheels Calibration", WheelsCalibrationCTRE::new);
         testsChooser.addOption("Field Display Test", FieldDisplayTest::new);
-        testsChooser.addOption("Robot Simulation Test", PhysicsSimulationTest::new);
+        testsChooser.addOption("Interpolation Test", InterpolationTableTest::new);
 
         testsChooser.addOption(
                 "Fly Wheels SysId Quasi-static (forward)",

@@ -57,6 +57,8 @@ public final class Constants {
     public static final class CrescendoField2024Constants {
         public static final double FIELD_WIDTH = 16.54;
         public static final double FIELD_HEIGHT = 8.21;
+
+        public static final Translation2d SPEAKER_AIM_POSITION_BLUE = new Translation2d(0.15, 5.55);
     }
 
     public static final class FlyWheelsConfigs {
@@ -75,7 +77,7 @@ public final class Constants {
     public static final class PitchConfigs {
         public static final double GEAR_RATIO = 400;
         public static final double PITCH_LOWEST_ROTATION_RAD = Math.toRadians(8);
-        public static final double PITCH_HIGHER_LIMIT_RAD = Math.toRadians(92);
+        public static final double PITCH_HIGHER_LIMIT_RAD = Math.toRadians(90);
 
         public static final double PITCH_KS = 0.15;
         public static final double PITCH_KG = 0.22;

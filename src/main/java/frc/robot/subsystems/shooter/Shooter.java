@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.subsystems.MapleSubsystem;
 import frc.robot.utils.Alert;
+import frc.robot.utils.MapleShooterOptimization;
 import frc.robot.utils.MechanismControl.MaplePIDController;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -28,7 +29,6 @@ public class Shooter extends MapleSubsystem {
     /* velocity RPM of the shooter is the position of the trapezoid profile */
     private final TrapezoidProfile flyWheelsSpeedRPMProfile;
     private final PIDController flyWheelsFeedBack;
-    private TrapezoidProfile.State flyWheelCurrentState;
     private double flyWheelsSetpointRPM;
 
     private final PitchIO pitchIO;
@@ -36,7 +36,6 @@ public class Shooter extends MapleSubsystem {
     private final ArmFeedforward pitchFeedForward;
     private final PIDController pitchFeedBack;
     private final TrapezoidProfile pitchProfile;
-    private TrapezoidProfile.State pitchCurrentState;
     private double pitchSetpointRad;
 
     private final Alert pitchNotCalibratedAlert = new Alert("Pitch not calibrated!", Alert.AlertType.ERROR);
@@ -73,7 +72,7 @@ public class Shooter extends MapleSubsystem {
 
     @Override
     public void onReset() {
-        this.flyWheelCurrentState = new TrapezoidProfile.State(0, 0);
+        this.flyWheelsCurrentState = new TrapezoidProfile.State(0, 0);
         this.flyWheelsSetpointRPM = 0;
         this.pitchCurrentState = new TrapezoidProfile.State(PITCH_LOWEST_ROTATION_RAD, 0);
         this.pitchSetpointRad = PITCH_LOWEST_ROTATION_RAD;
@@ -100,50 +99,45 @@ public class Shooter extends MapleSubsystem {
         pitchNotCalibratedAlert.setActivated(!pitchInputs.calibrated);
     }
 
-    public void runIdle() {
-        runShooterState(PITCH_LOWEST_ROTATION_RAD, 0);
+    private void runFlyWheelsControlLoops() {
+        final double feedForwardVoltage = flyWheelsFeedForward.calculate(flyWheelsCurrentState.position,  flyWheelsCurrentState.velocity),
+                feedBackVoltage = flyWheelsFeedBack.calculate(getFlyWheelRPM(), flyWheelsCurrentState.position);
+        flyWheelsIO.runFlyWheelsVoltage(feedForwardVoltage + feedBackVoltage);
     }
 
-    public void runPrepareAmp() {
-        runShooterState(Math.toRadians(65), 300);
-    }
+    private TrapezoidProfile.State flyWheelsCurrentState;
+    private void runFlyWheelsProfile(double shooterSetpointRPM) {
+        if (getPitchAngleRad() < Math.toRadians(12) && shooterSetpointRPM!=0) {
+            DriverStation.reportWarning("Pitch too low, not starting shooter for now...", false);
+            shooterSetpointRPM = 0;
+        }
 
-    public void runAmp() {
-        runShooterState(PITCH_HIGHER_LIMIT_RAD, 500);
-    }
-
-    public void runShooterState(double pitchAngleSetpointRadians, double flyWheelsSetpointRPM) {
-        this.pitchSetpointRad = pitchAngleSetpointRadians;
-        this.flyWheelsSetpointRPM = flyWheelsSetpointRPM;
-        runPitchCloseLoop(pitchAngleSetpointRadians);
-        runFlyWheelCloseLoop(flyWheelsSetpointRPM);
-
-        Logger.recordOutput("Shooter/pitchAngleSetpointRadians", pitchAngleSetpointRadians);
-        Logger.recordOutput("Shooter/shooterSetpointRPM", flyWheelsSetpointRPM);
+        flyWheelsCurrentState = flyWheelsSpeedRPMProfile.calculate(
+                Robot.defaultPeriodSecs,
+                flyWheelsCurrentState,
+                new TrapezoidProfile.State(shooterSetpointRPM, 0)
+        );
+        Logger.recordOutput("shooterProfileGoalRPM", flyWheelsCurrentState.position);
     }
 
     double previousStateVelocity = 0;
-    private void runPitchCloseLoop(double pitchAngleSetpointRadians) {
-        if (pitchAngleSetpointRadians < PITCH_LOWEST_ROTATION_RAD || pitchAngleSetpointRadians > PITCH_HIGHER_LIMIT_RAD || !pitchInputs.calibrated) {
+    private void runPitchControlLoops() {
+        if (pitchCurrentState.position < PITCH_LOWEST_ROTATION_RAD || pitchCurrentState.position > PITCH_HIGHER_LIMIT_RAD || !pitchInputs.calibrated) {
             if (pitchInputs.calibrated)
-                DriverStation.reportWarning("attempting to set a set-point out of range: " + pitchAngleSetpointRadians, false);
+                DriverStation.reportWarning(
+                        "attempting to run a pitch setpoint out of range: "
+                                + pitchCurrentState.position
+                        , true
+                );
             pitchIO.runPitchVoltage(0);
             return;
         }
-
-        this.pitchCurrentState = pitchProfile.calculate(
-                Robot.defaultPeriodSecs,
-                pitchCurrentState,
-                new TrapezoidProfile.State(pitchAngleSetpointRadians, 0)
-        );
-
-        Logger.recordOutput("Shooter/pitchProfileGoalPosition (deg)", Math.toDegrees(pitchCurrentState.position));
         final double pitchAcceleration = (pitchCurrentState.velocity - previousStateVelocity) / Robot.defaultPeriodSecs;
         previousStateVelocity = pitchCurrentState.velocity;
         final double
                 feedForwardVoltage = pitchFeedForward.calculate(
-                        pitchCurrentState.position, pitchCurrentState.velocity, pitchAcceleration
-                ),
+                pitchInputs.pitchAngleRad, pitchCurrentState.velocity, pitchAcceleration
+        ),
                 feedBackVoltage = pitchFeedBack.calculate(
                         pitchInputs.pitchAngleRad, pitchCurrentState.position
                 );
@@ -160,22 +154,58 @@ public class Shooter extends MapleSubsystem {
         pitchIO.runPitchVoltage(pitchVoltage);
     }
 
-    private void runFlyWheelCloseLoop(double shooterSetpointRPM) {
-        if (getPitchAngleRad() < Math.toRadians(12) && shooterSetpointRPM!=0) {
-            DriverStation.reportWarning("Pitch too low, not starting shooter for now...", false);
-            shooterSetpointRPM = 0;
-        }
-
-        flyWheelCurrentState = flyWheelsSpeedRPMProfile.calculate(
+    private TrapezoidProfile.State pitchCurrentState;
+    private void runPitchProfile(double pitchAngleSetpointRadians) {
+        this.pitchCurrentState = pitchProfile.calculate(
                 Robot.defaultPeriodSecs,
-                flyWheelCurrentState,
-                new TrapezoidProfile.State(shooterSetpointRPM, 0)
+                pitchCurrentState,
+                new TrapezoidProfile.State(pitchAngleSetpointRadians, 0)
         );
-        Logger.recordOutput("shooterProfileGoalRPM", flyWheelCurrentState.position);
 
-        final double feedForwardVoltage = flyWheelsFeedForward.calculate(flyWheelCurrentState.position, flyWheelCurrentState.velocity),
-                feedBackVoltage = flyWheelsFeedBack.calculate(getFlyWheelRPM(), flyWheelCurrentState.position);
-        flyWheelsIO.runFlyWheelsVoltage(feedForwardVoltage + feedBackVoltage);
+        Logger.recordOutput("Shooter/pitchProfileGoalPosition (deg)", Math.toDegrees(pitchCurrentState.position));
+    }
+
+    public void runProfiledShooterState(double pitchAngleSetpointRadians, double flyWheelsSetpointRPM) {
+        this.pitchSetpointRad = pitchAngleSetpointRadians;
+        this.flyWheelsSetpointRPM = flyWheelsSetpointRPM;
+
+        runPitchProfile(pitchAngleSetpointRadians);
+        runPitchControlLoops();
+
+        runFlyWheelsProfile(flyWheelsSetpointRPM);
+        runFlyWheelsControlLoops();
+
+        Logger.recordOutput("Shooter/pitchAngleSetpointRadians", pitchAngleSetpointRadians);
+        Logger.recordOutput("Shooter/shooterSetpointRPM", flyWheelsSetpointRPM);
+    }
+
+    public void runShooterAimingState(MapleShooterOptimization.ShooterState shootingState) {
+        this.pitchCurrentState = new TrapezoidProfile.State(
+                Math.toRadians(shootingState.shooterAngleDegrees),
+                Math.toRadians(shootingState.shooterAngleChangeRateDegreesPerSecond)
+        );
+        this.previousStateVelocity = pitchCurrentState.velocity; // this disables acceleration FF
+        this.pitchSetpointRad = pitchCurrentState.position;
+        runPitchControlLoops();
+
+        this.flyWheelsCurrentState = new TrapezoidProfile.State(
+                shootingState.shooterRPM,
+                shootingState.shooterRPMChangeRateRPMPerSeconds
+        );
+        this.flyWheelsSetpointRPM = shootingState.shooterRPM;
+        runFlyWheelsControlLoops();
+    }
+
+    public void runIdle() {
+        runProfiledShooterState(PITCH_LOWEST_ROTATION_RAD, 0);
+    }
+
+    public void runPrepareAmp() {
+        runProfiledShooterState(Math.toRadians(65), 500);
+    }
+
+    public void runAmp() {
+        runProfiledShooterState(PITCH_HIGHER_LIMIT_RAD, 600);
     }
 
     @AutoLogOutput(key = "Shooter/ActualShooterSpeedRPM")
@@ -193,5 +223,9 @@ public class Shooter extends MapleSubsystem {
 
     public boolean isPitchInPosition() {
         return Math.abs(getPitchAngleRad() - pitchSetpointRad) < PITCH_PID.errorTolerance;
+    }
+
+    public boolean isReady() {
+        return isFlyWheelReady() && isPitchInPosition();
     }
 }

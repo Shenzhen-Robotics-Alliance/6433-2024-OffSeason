@@ -12,7 +12,7 @@ import frc.robot.utils.MapleMaths.MapleCommonMath;
 import java.util.function.DoubleSupplier;
 
 public class MapleJoystickDriveInput {
-    private final DoubleSupplier joystickXSupplier, joystickYSupplier, joystickOmegaSupplier;
+    public final DoubleSupplier joystickXSupplier, joystickYSupplier, joystickOmegaSupplier;
 
     /**
      * @param joystickXSupplier the supplier of the x-axis of the joystick, positive is RIGHTWARDS

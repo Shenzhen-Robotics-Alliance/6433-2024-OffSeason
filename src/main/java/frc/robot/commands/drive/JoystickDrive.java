@@ -17,14 +17,14 @@ import java.util.function.BooleanSupplier;
 import static frc.robot.subsystems.drive.HolonomicDriveSubsystem.isZero;
 
 public class JoystickDrive extends Command {
-    private final MapleJoystickDriveInput input;
+    protected MapleJoystickDriveInput input;
     private final BooleanSupplier useDriverStationCentricSwitch;
     private final HolonomicDriveSubsystem driveSubsystem;
     private final PIDController chassisRotationController;
 
-    private final Timer previousChassisUsageTimer, previousRotationalInputTimer;
+    protected final Timer previousChassisUsageTimer, previousRotationalInputTimer;
     private ChassisSpeeds currentPilotInputSpeeds;
-    private Rotation2d currentRotationMaintenanceSetpoint;
+    protected Rotation2d currentRotationMaintenanceSetpoint;
     public JoystickDrive(MapleJoystickDriveInput input, BooleanSupplier useDriverStationCentricSwitch, HolonomicDriveSubsystem driveSubsystem) {
         super();
         this.input = input;
@@ -52,6 +52,8 @@ public class JoystickDrive extends Command {
 
     @Override
     public void execute() {
+        if (input == null) return;
+
         final ChassisSpeeds newestPilotInputSpeed = input.getJoystickChassisSpeeds(
                 driveSubsystem.getChassisMaxLinearVelocityMetersPerSec(), driveSubsystem.getChassisMaxAngularVelocity()
         );

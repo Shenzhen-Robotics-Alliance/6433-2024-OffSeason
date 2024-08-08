@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -20,8 +21,10 @@ import frc.robot.autos.Auto;
 import frc.robot.autos.AutoBuilder;
 import frc.robot.commands.drive.AutoAlignment;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.commands.drive.JoystickDriveAndAimAtTarget;
 import frc.robot.commands.shooter.AmpManual;
 import frc.robot.commands.shooter.GrabNoteManual;
+import frc.robot.commands.shooter.ShootNoteAutoAim;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
 import frc.robot.subsystems.drive.IO.GyroIOSim;
@@ -43,6 +46,7 @@ import frc.robot.utils.CompetitionFieldUtils.Simulation.SwerveDriveSimulation;
 import frc.robot.utils.Config.MapleConfigFile;
 import frc.robot.utils.Config.PhotonCameraProperties;
 import frc.robot.utils.MapleJoystickDriveInput;
+import frc.robot.utils.MapleShooterOptimization;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import java.io.IOException;
@@ -257,6 +261,22 @@ public class RobotContainer {
         driverController.a().whileTrue(Commands.run(intake::runReverse, intake));
 
         driverController.leftBumper().whileTrue(new GrabNoteManual(shooter, intake));
+
+        final MapleShooterOptimization shooterOptimization = new MapleShooterOptimization(
+                "MainShooter",
+                new double[] {1.5, 3, 4, 5, 6},
+                new double[] {70, 55, 45, 35, 30},
+                new double[] {3000, 3500, 4000, 4500, 5000},
+                new double[] {0.25, 0.35, 0.45, 0.5, 0.5}
+        );
+        driverController.rightTrigger(0.5).whileTrue(new ShootNoteAutoAim(
+                shooter, intake, shooterOptimization, drive,
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE)
+        ).alongWith(new JoystickDriveAndAimAtTarget(
+                driveInput, drive,
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
+                shooterOptimization
+        )));
     }
 
     /**
