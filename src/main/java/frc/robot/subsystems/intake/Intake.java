@@ -42,8 +42,8 @@ public class Intake extends MapleSubsystem {
         commandGroup.addRequirements(this);
         commandGroup.addCommands(Commands.run(() -> io.runIntakeVoltage(12), this)
                 .until(() -> inputs.beamBreakTriggered));
-        commandGroup.addCommands(Commands.run(() -> io.runIntakeVoltage(-3), this)
-                .withTimeout(0.15));
+//        commandGroup.addCommands(Commands.run(() -> io.runIntakeVoltage(-1.5), this)
+//                .withTimeout(0.15));
         return commandGroup;
     }
 

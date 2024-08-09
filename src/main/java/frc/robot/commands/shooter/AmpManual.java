@@ -9,10 +9,6 @@ public class AmpManual extends SequentialCommandGroup {
     public AmpManual(Shooter shooter, Intake intake) {
         addRequirements(intake, shooter);
 
-        addCommands(Commands.run(shooter::runPrepareAmp, shooter)
-                .beforeStarting(shooter::runPrepareAmp, shooter)
-                .alongWith(Commands.run(intake::runIdle, intake))
-                .until(shooter::isPitchInPosition));
         addCommands(Commands.run(shooter::runAmp, shooter)
                 .alongWith(intake.shootNoteUntilNoteGone())
                 .withTimeout(0.8));
