@@ -23,9 +23,11 @@ import frc.robot.autos.AutoBuilder;
 import frc.robot.commands.drive.AutoAlignment;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.drive.JoystickDriveAndAimAtTarget;
+import frc.robot.commands.drive.PathFindToPose;
 import frc.robot.commands.shooter.AmpManual;
 import frc.robot.commands.shooter.GrabNoteManual;
-import frc.robot.commands.shooter.ShootNoteAutoAim;
+import frc.robot.commands.shooter.SemiAutoShootSequence;
+import frc.robot.commands.shooter.ShootAtPositionSequence;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
 import frc.robot.subsystems.drive.IO.GyroIOSim;
@@ -229,11 +231,12 @@ public class RobotContainer {
                 MapleJoystickDriveInput.rightHandedJoystick(driverController)
                 : MapleJoystickDriveInput.leftHandedJoystick(driverController);
 
-        drive.setDefaultCommand(new JoystickDrive(
+        final Command joystickDrive = new JoystickDrive(
                 driveInput,
                 () -> true,
                 drive
-        ));
+        );
+        drive.setDefaultCommand(joystickDrive);
 
         driverController.x().whileTrue(Commands.run(drive::lockChassisWithXFormation, drive));
         driverController.start().onTrue(Commands.runOnce(
@@ -266,19 +269,49 @@ public class RobotContainer {
 
         final MapleShooterOptimization shooterOptimization = new MapleShooterOptimization(
                 "MainShooter",
-                new double[] {1.5, 3, 4, 5},
-                new double[] {48, 38, 32, 26},
+                new double[] {1.5, 3, 4, 4.5},
+                new double[] {48, 38, 32, 27},
                 new double[] {3000, 3500, 4000, 5000},
                 new double[] {0.25, 0.35, 0.45, 0.5}
         );
-        driverController.rightTrigger(0.5).whileTrue(new JoystickDriveAndAimAtTarget(
+
+        final JoystickDriveAndAimAtTarget faceTargetWhileDriving = new JoystickDriveAndAimAtTarget(
                 driveInput, drive,
                 () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
-                shooterOptimization
-        ).alongWith(new ShootNoteAutoAim(
+                shooterOptimization,
+                1
+        );
+        driverController.rightBumper().whileTrue(faceTargetWhileDriving.alongWith(new SemiAutoShootSequence(
                 shooter, intake, shooterOptimization, drive,
-                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE)
-        )));
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
+                () -> false // never shoot
+        )).andThen(joystickDrive::initialize)); // reset rotation maintenance
+
+        final JoystickDriveAndAimAtTarget faceTargetPrepareToShootWhileDriving = new JoystickDriveAndAimAtTarget(
+                driveInput, drive,
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
+                shooterOptimization,
+                0.7
+        );
+        driverController.rightTrigger(0.5).whileTrue(faceTargetPrepareToShootWhileDriving.alongWith(new SemiAutoShootSequence(
+                shooter, intake, shooterOptimization, drive,
+                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
+                faceTargetPrepareToShootWhileDriving::chassisRotationInPosition
+        )).andThen(joystickDrive::initialize)); // reset rotation maintenance
+
+//        final Command pathFindToShootingPose = new AutoAlignment(
+//                drive,
+//                () -> Constants.toCurrentAlliancePose(new Pose2d(4, 6.4, Rotation2d.fromDegrees(-165))),
+//                () -> Constants.toCurrentAlliancePose(new Pose2d(4, 6.4, Rotation2d.fromDegrees(-165))),
+//                new Pose2d(0.3, 0.3, Rotation2d.fromDegrees(5)),
+//                0.5
+//        );
+//        driverController.rightTrigger(0.5).whileTrue(pathFindToShootingPose.alongWith(new ShootAtPositionSequence(
+//                shooter, intake, shooterOptimization, drive,
+//                () -> Constants.toCurrentAllianceTranslation(Constants.CrescendoField2024Constants.SPEAKER_AIM_POSITION_BLUE),
+//                () -> Constants.toCurrentAllianceTranslation(new Translation2d(4, 6.4)),
+//                pathFindToShootingPose::isFinished
+//        )));
 
         CommandScheduler.getInstance().schedule(Commands.run(
                 () -> Logger.recordOutput(

@@ -197,15 +197,15 @@ public class Shooter extends MapleSubsystem {
     }
 
     public void runIdle() {
-        runProfiledShooterState(Math.toRadians(15), 0);
+        runProfiledShooterState(Math.toRadians(12), 0);
     }
 
     public void runPrepareAmp() {
-        runProfiledShooterState(Math.toRadians(65), 500);
+        runProfiledShooterState(Math.toRadians(60), 500);
     }
 
     public void runAmp() {
-        runProfiledShooterState(PITCH_HIGHER_LIMIT_RAD, 600);
+        runProfiledShooterState(PITCH_HIGHER_LIMIT_RAD, 700);
     }
 
     @AutoLogOutput(key = "Shooter/ActualShooterSpeedRPM")

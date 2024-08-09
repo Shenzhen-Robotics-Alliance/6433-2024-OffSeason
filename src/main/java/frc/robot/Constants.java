@@ -132,10 +132,10 @@ public final class Constants {
 
         public static final MaplePIDController.MaplePIDConfig chassisRotationalPIDConfig = new MaplePIDController.MaplePIDConfig(
                 Math.toRadians(ChassisDefaultConfigs.DEFAULT_MAX_ANGULAR_VELOCITY_DEGREES_PER_SECOND),
-                Math.toRadians(35),
+                Math.toRadians(45),
+                0.02,
+                Math.toRadians(5),
                 0.05,
-                Math.toRadians(1),
-                0.08,
                 true,
                 0
         );

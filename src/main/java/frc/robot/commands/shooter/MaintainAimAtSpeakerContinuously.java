@@ -8,13 +8,13 @@ import frc.robot.utils.MapleShooterOptimization;
 
 import java.util.function.Supplier;
 
-public class MaintainAimAtSpeaker extends Command {
+public class MaintainAimAtSpeakerContinuously extends Command {
     private final Shooter shooter;
     private final MapleShooterOptimization shooterOptimization;
     private final HolonomicDriveSubsystem drive;
     private final Supplier<Translation2d> targetPositionSupplier;
 
-    public MaintainAimAtSpeaker(Shooter shooter, MapleShooterOptimization shooterOptimization, HolonomicDriveSubsystem drive, Supplier<Translation2d> targetPositionSupplier) {
+    public MaintainAimAtSpeakerContinuously(Shooter shooter, MapleShooterOptimization shooterOptimization, HolonomicDriveSubsystem drive, Supplier<Translation2d> targetPositionSupplier) {
         this.shooter = shooter;
         this.shooterOptimization = shooterOptimization;
         this.drive = drive;

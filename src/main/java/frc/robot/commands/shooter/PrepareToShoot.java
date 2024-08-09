@@ -3,7 +3,6 @@ package frc.robot.commands.shooter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drive.HolonomicDriveSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.utils.MapleShooterOptimization;
 
@@ -13,13 +12,13 @@ public class PrepareToShoot extends Command {
     private final Shooter shooter;
     private final MapleShooterOptimization shooterOptimization;
     private final Supplier<Translation2d> targetPositionSupplier;
-    private final HolonomicDriveSubsystem drive;
+    private final Supplier<Translation2d> robotPositionSupplier;
 
-    public PrepareToShoot(Shooter shooter, MapleShooterOptimization shooterOptimization, Supplier<Translation2d> targetPositionSupplier, HolonomicDriveSubsystem drive) {
+    public PrepareToShoot(Shooter shooter, MapleShooterOptimization shooterOptimization, Supplier<Translation2d> targetPositionSupplier, Supplier<Translation2d> robotPositionSupplier) {
         this.shooter = shooter;
         this.shooterOptimization = shooterOptimization;
         this.targetPositionSupplier = targetPositionSupplier;
-        this.drive = drive;
+        this.robotPositionSupplier = robotPositionSupplier;
 
         super.addRequirements(shooter);
     }
@@ -29,7 +28,7 @@ public class PrepareToShoot extends Command {
     public void initialize() {
         initialState = shooterOptimization.getOptimizedShootingState(
                 targetPositionSupplier.get(),
-                drive.getPose().getTranslation(),
+                robotPositionSupplier.get(),
                 new ChassisSpeeds()
         );
     }
