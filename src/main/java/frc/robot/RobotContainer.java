@@ -24,10 +24,7 @@ import frc.robot.commands.drive.AutoAlignment;
 import frc.robot.commands.drive.JoystickDrive;
 import frc.robot.commands.drive.JoystickDriveAndAimAtTarget;
 import frc.robot.commands.drive.PathFindToPose;
-import frc.robot.commands.shooter.AmpManual;
-import frc.robot.commands.shooter.GrabNoteManual;
-import frc.robot.commands.shooter.SemiAutoShootSequence;
-import frc.robot.commands.shooter.ShootAtPositionSequence;
+import frc.robot.commands.shooter.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.IO.GyroIOPigeon2;
 import frc.robot.subsystems.drive.IO.GyroIOSim;
@@ -245,23 +242,7 @@ public class RobotContainer {
                 ).ignoringDisable(true)
         );
 
-        driverController.b().whileTrue(new AutoAlignment(
-                drive,
-                () -> Constants.toCurrentAlliancePose(new Pose2d(
-                        1.85, 7,
-                        Rotation2d.fromDegrees(-90)
-                )),
-                () -> Constants.toCurrentAlliancePose(new Pose2d(
-                        1.85, 7.7,
-                        Rotation2d.fromDegrees(-90)
-                )),
-                new Pose2d(0.1, 0.1, Rotation2d.fromDegrees(3)),
-                        0.5,
-                Commands.run(shooter::runPrepareAmp, shooter),
-                new AmpManual(shooter, intake)
-        ));
-
-        driverController.y().onTrue(new AmpManual(shooter, intake));
+        driverController.y().onTrue(new PrepareToAmp(shooter, intake)).onFalse(new AmpManual(shooter, intake));
 
         driverController.a().whileTrue(Commands.run(intake::runReverse, intake));
 
@@ -269,9 +250,9 @@ public class RobotContainer {
 
         final MapleShooterOptimization shooterOptimization = new MapleShooterOptimization(
                 "MainShooter",
-                new double[] {1.5, 3, 4, 4.5},
-                new double[] {48, 38, 32, 27},
-                new double[] {3000, 3500, 4000, 5000},
+                new double[] {2, 3, 4, 4.5},
+                new double[] {48, 38, 32, 28},
+                new double[] {3000, 3500, 4500, 5000},
                 new double[] {0.25, 0.35, 0.45, 0.5}
         );
 
