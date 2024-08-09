@@ -7,6 +7,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
+import org.littletonrobotics.junction.Logger;
 
 import static frc.robot.Constants.PitchConfigs.*;
 
@@ -33,8 +34,9 @@ public class PitchIOReal implements PitchIO {
                 pitchMotorSuppliedAmps, pitchRelativeEncoderPositionRev, pitchEncoderVelocityRevPerSec
         );
 
-        pitchInputs.calibrated |= limitSwitch.get();
-        if (limitSwitch.get())
+        pitchInputs.calibrated |= isLimitSwitchPressed();
+        Logger.recordOutput("Shooter/Pitch Limit", isLimitSwitchPressed());
+        if (isLimitSwitchPressed())
             encoderPositionAtLowestPoint = pitchRelativeEncoderPositionRev.getValue();
 
         pitchInputs.pitchSuppliedCurrentAmps = pitchMotorSuppliedAmps.getValue();
@@ -56,5 +58,11 @@ public class PitchIOReal implements PitchIO {
     @Override
     public void setPitchLock(boolean enabled) {
         pitchFalcon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    }
+
+    public boolean isLimitSwitchPressed() {
+        // if the sensor is a 3-wire sensor, this should be limitSwitch.get()
+        // if the sensor is a simple sensor, this should be !limitSwitch.get
+        return !limitSwitch.get();
     }
 }
